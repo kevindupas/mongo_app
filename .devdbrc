@@ -1,0 +1,6 @@
+[
+  {
+    "type": "sqlite",
+    "path": "/Users/kevindupas/PROJECT/mongo_app/database/database.sqlite"
+  }
+]

@@ -44,10 +44,11 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission): RedirectResponse
     {
-        // Check if this permission is used by any role
-        $rolesWithPermission = \App\Models\Role::whereHas('permissions', function ($query) use ($permission) {
-            $query->where('name', $permission->name);
-        })->count();
+        // For MongoDB, we need to check embedded documents differently
+        // Instead of using whereHas, we'll use where with elemMatch
+        $rolesWithPermission = \App\Models\Role::where('permissions', 'elemMatch', [
+            'name' => $permission->name
+        ])->count();
 
         if ($rolesWithPermission > 0) {
             return back()->with('error', 'Cannot delete permission because it is used by roles.');

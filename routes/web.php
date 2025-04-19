@@ -15,6 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['admin'])->prefix('admin')->group(function () {
         // Gestion des utilisateurs
         Route::get('users', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
+        Route::post('users', [App\Http\Controllers\Admin\UserController::class, 'store'])->name('admin.users.store');
         Route::put('users/{user}/update-role', [App\Http\Controllers\Admin\UserController::class, 'updateRole'])->name('admin.users.update-role');
         Route::delete('users/{user}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
 

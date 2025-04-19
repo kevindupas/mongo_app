@@ -21,7 +21,9 @@ import { Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
 
 interface Permission {
-    id: string;
+    // Handle both possible ID formats
+    id?: string;
+    _id?: string;
     name: string;
 }
 
@@ -39,6 +41,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/admin/permissions',
     },
 ];
+
+// Helper function to get the correct ID from a permission
+const getPermissionId = (permission: Permission): string => {
+    return String(permission._id || permission.id || '');
+};
 
 export default function PermissionsIndex({ permissions }: PermissionsPageProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -58,7 +65,15 @@ export default function PermissionsIndex({ permissions }: PermissionsPageProps) 
         });
     };
 
-    const handleDeletePermission = (permissionId: string) => {
+    const handleDeletePermission = (permission: Permission) => {
+        // Get the correct ID (either _id or id)
+        const permissionId = getPermissionId(permission);
+
+        if (!permissionId) {
+            console.error('Permission ID is undefined or empty');
+            return;
+        }
+
         if (confirm('Êtes-vous sûr de vouloir supprimer cette permission?')) {
             destroy(route('admin.permissions.destroy', { permission: permissionId }));
         }
@@ -131,10 +146,10 @@ export default function PermissionsIndex({ permissions }: PermissionsPageProps) 
                             </TableHeader>
                             <TableBody>
                                 {permissions.map((permission) => (
-                                    <TableRow key={permission.id}>
+                                    <TableRow key={getPermissionId(permission)}>
                                         <TableCell className="font-medium">{permission.name}</TableCell>
                                         <TableCell>
-                                            <Button variant="ghost" size="sm" onClick={() => handleDeletePermission(permission.id)}>
+                                            <Button variant="ghost" size="sm" onClick={() => handleDeletePermission(permission)}>
                                                 <Trash className="h-4 w-4 text-red-500" />
                                             </Button>
                                         </TableCell>

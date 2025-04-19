@@ -67,15 +67,25 @@ class RoleController extends Controller
             'name' => $request->name,
         ]);
 
-        // Clear existing permissions
-        $role->permissions()->delete();
+        // For MongoDB embedded documents, we need to directly manipulate the permissions array
+        // rather than using the relationship methods like delete()
 
-        // Assign new permissions
+        // First, we'll get the permissions data
+        $permissionsData = [];
         $permissions = Permission::whereIn('_id', $request->permissions)->get();
         foreach ($permissions as $permission) {
-            $role->permissions()->create([
+            $permissionsData[] = [
                 'name' => $permission->name,
-            ]);
+            ];
+        }
+
+        // Update the role with the new permissions array
+        $role->unset('permissions'); // Remove the existing permissions array
+        $role->save();
+
+        // Now add the new permissions
+        foreach ($permissionsData as $permData) {
+            $role->permissions()->create($permData);
         }
 
         return redirect()->route('admin.roles.index');

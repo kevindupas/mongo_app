@@ -86,20 +86,27 @@ export default function RolesIndex({ roles, permissions }: RolesPageProps) {
 
     const { delete: destroy } = useForm();
 
+    // Helper pour obtenir l'ID d'une permission en cherchant par nom
+    const getPermissionIdByName = (permissionName: string): string => {
+        const perm = permissions.find((p) => p.name === permissionName);
+        return perm ? getPermissionId(perm) : '';
+    };
+
+    // Extrait les IDs de permission d'un rôle en matchant par nom
+    const extractPermissionIds = (role: Role): string[] => {
+        return role.permissions
+            .map((p) => {
+                if (typeof p === 'string') return p;
+                // Chercher l'ID de la permission correspondante par nom
+                return getPermissionIdByName(p.name);
+            })
+            .filter((id) => id && id !== 'undefined' && id !== '[object Object]');
+    };
+
     // Vérifie si une permission est sélectionnée dans la liste actuelle
     const isPermissionSelected = (permission: Permission): boolean => {
         const permId = getPermissionId(permission);
         return selectedPermissionIds.includes(permId);
-    };
-
-    // Extrait les IDs de permission d'un rôle pour les utiliser dans le formulaire
-    const extractPermissionIds = (role: Role): string[] => {
-        return role.permissions
-            .map((p) => {
-                const id = getPermissionId(p);
-                return id;
-            })
-            .filter((id) => id && id !== 'undefined' && id !== '[object Object]');
     };
 
     const handleAddRole = () => {
@@ -114,7 +121,7 @@ export default function RolesIndex({ roles, permissions }: RolesPageProps) {
     const handleEditRole = (role: Role) => {
         setEditingRole(role);
 
-        // Extraire UNIQUEMENT les IDs des permissions actuelles
+        // Extraire les IDs des permissions en matchant par nom
         const permissionIds = extractPermissionIds(role);
 
         console.log('Rôle à éditer:', role.name);
@@ -141,9 +148,6 @@ export default function RolesIndex({ roles, permissions }: RolesPageProps) {
             console.error('Impossible de mettre à jour: ID du rôle manquant');
             return;
         }
-
-        // S'assurer que les données de permissions sont bien des IDs
-        console.log('Données avant nettoyage:', editForm.data);
 
         const cleanedPermissionIds = selectedPermissionIds.filter((id) => id && id !== 'undefined' && id !== '[object Object]');
 
